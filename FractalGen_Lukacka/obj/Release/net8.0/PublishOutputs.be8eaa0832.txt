@@ -1,0 +1,7 @@
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\PubTmp\Out\FractalGen_Lukacka.exe
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\PubTmp\Out\appsettings.Development.json
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\PubTmp\Out\appsettings.json
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\PubTmp\Out\FractalGen_Lukacka.dll
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\PubTmp\Out\FractalGen_Lukacka.deps.json
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\PubTmp\Out\FractalGen_Lukacka.runtimeconfig.json
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\PubTmp\Out\FractalGen_Lukacka.pdb

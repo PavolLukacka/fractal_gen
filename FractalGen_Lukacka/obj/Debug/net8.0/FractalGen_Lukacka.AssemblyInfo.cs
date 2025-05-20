@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FractalGen_Lukacka")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0b27365955fb90050a602b7191588e4fb433426b")]
 [assembly: System.Reflection.AssemblyProductAttribute("FractalGen_Lukacka")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FractalGen_Lukacka")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
