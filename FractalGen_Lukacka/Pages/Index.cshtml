@@ -1,0 +1,201 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Interactive CUDA Fractal Explorer";
+}
+
+<!-- Tailwind CSS for quick, modern styling -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<div class="container mx-auto p-6 select-none">
+    <h1 class="text-3xl font-bold mb-6 text-center">Interactive CUDA Fractal Explorer</h1>
+
+    <div class="grid md:grid-cols-4 gap-6">
+        <!-- ░░░ Control Panel ░░░ -->
+        <div class="md:col-span-1 bg-white/80 rounded-2xl shadow p-4 space-y-4">
+            <div>
+                <label class="block font-semibold">Center X</label>
+                <input id="xCenter" type="number" step="0.00001" class="w-full rounded border p-1" value="-0.5">
+            </div>
+            <div>
+                <label class="block font-semibold">Center Y</label>
+                <input id="yCenter" type="number" step="0.00001" class="w-full rounded border p-1" value="0.0">
+            </div>
+            <div>
+                <label class="block font-semibold">Zoom (×)</label>
+                <input id="zoom" type="number" step="0.1" min="1" class="w-full rounded border p-1" value="1">
+            </div>
+            <div>
+                <label class="block font-semibold">Iterations</label>
+                <input id="iterations" type="range" min="100" max="3000" step="100" value="1000" class="w-full">
+                <span id="iterLabel" class="text-sm">1000</span>
+            </div>
+            <div>
+                <label class="block font-semibold">Palette</label>
+                <select id="palette" class="w-full rounded border p-1">
+                    <option value="grayscale">Grayscale</option>
+                    <option value="rainbow">Rainbow</option>
+                    <option value="fire">Fire</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold">Resolution</label>
+                <div class="flex space-x-2">
+                    <input id="width" type="number" min="100" max="1920" value="800" class="w-1/2 rounded border p-1">
+                    <input id="height" type="number" min="100" max="1920" value="800" class="w-1/2 rounded border p-1">
+                </div>
+            </div>
+            <button id="generateBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-2 font-semibold shadow">
+                Generate
+            </button>
+            <button id="resetBtn" class="w-full mt-2 bg-gray-200 hover:bg-gray-300 rounded-lg py-2 font-semibold shadow">
+                Reset View
+            </button>
+        </div>
+
+        <!-- ░░░ Fractal Display ░░░ -->
+        <div class="md:col-span-3">
+            <div class="relative group">
+                <!-- The fractal image (served from backend) -->
+                <img id="fractal" src="/output.ppm" alt="Fractal" class="w-full rounded-2xl shadow-lg" />
+                <!-- Transparent overlay captures clicks & wheel events -->
+                <div id="overlay" class="absolute inset-0 cursor-crosshair"></div>
+                <!-- Hint tooltip -->
+                <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Scroll to zoom │ Left‑click to zoom in │ Right‑click to zoom out
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ---------- STATE ----------
+        const state = {
+            x: -0.5,
+            y: 0.0,
+            zoom: 1,
+            iterations: 1000,
+            width: 800,
+            height: 800,
+            palette: 'grayscale'
+        };
+
+        // Link DOM elements
+        const img = document.getElementById('fractal');
+        const overlay = document.getElementById('overlay');
+        const iterRange = document.getElementById('iterations');
+        const iterLabel = document.getElementById('iterLabel');
+
+        // ---------- UTILITIES ----------
+        function fetchFractal(showSpinner = true) {
+            const { x, y, zoom, iterations, width, height, palette } = state;
+            const url = `/api/fractal/generate?x=${x}&y=${y}&zoom=${zoom}&iterations=${iterations}&w=${width}&h=${height}&palette=${palette}`;
+            if (showSpinner) img.classList.add('animate-pulse');
+            fetch(url)
+                .then(() => {
+                    img.src = `/output.ppm?${Date.now()}`; // bust cache
+                })
+                .finally(() => img.classList.remove('animate-pulse'));
+        }
+
+        function updateInputFields() {
+            document.getElementById('xCenter').value = state.x.toFixed(6);
+            document.getElementById('yCenter').value = state.y.toFixed(6);
+            document.getElementById('zoom').value = state.zoom.toFixed(2);
+            iterRange.value = state.iterations;
+            iterLabel.textContent = state.iterations;
+            document.getElementById('width').value = state.width;
+            document.getElementById('height').value = state.height;
+            document.getElementById('palette').value = state.palette;
+        }
+
+        function applyInputsToState() {
+            state.x = parseFloat(document.getElementById('xCenter').value);
+            state.y = parseFloat(document.getElementById('yCenter').value);
+            state.zoom = parseFloat(document.getElementById('zoom').value);
+            state.iterations = parseInt(iterRange.value);
+            state.width = parseInt(document.getElementById('width').value);
+            state.height = parseInt(document.getElementById('height').value);
+            state.palette = document.getElementById('palette').value;
+        }
+
+        function getPlaneBounds() {
+            const scale = 1 / state.zoom;
+            const halfWidth = 1.5 * scale;
+            const halfHeight = 1.5 * scale;
+            return {
+                xMin: state.x - halfWidth,
+                xMax: state.x + halfWidth,
+                yMin: state.y - halfHeight,
+                yMax: state.y + halfHeight
+            };
+        }
+
+        function screenToComplex(clientX, clientY) {
+            const rect = img.getBoundingClientRect();
+            const relX = (clientX - rect.left) / rect.width;  // 0…1
+            const relY = (clientY - rect.top) / rect.height; // 0…1
+            const { xMin, xMax, yMin, yMax } = getPlaneBounds();
+            const cx = xMin + relX * (xMax - xMin);
+            const cy = yMin + relY * (yMax - yMin);
+            return { cx, cy };
+        }
+
+        // ---------- EVENT LISTENERS ----------
+        // Generate button
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            applyInputsToState();
+            fetchFractal();
+        });
+
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            Object.assign(state, { x: -0.5, y: 0, zoom: 1 });
+            updateInputFields();
+            fetchFractal();
+        });
+
+        // Update iteration label in real‑time
+        iterRange.addEventListener('input', () => {
+            iterLabel.textContent = iterRange.value;
+        });
+
+        // Mouse wheel zoom
+        overlay.addEventListener('wheel', e => {
+            e.preventDefault();
+            const { cx, cy } = screenToComplex(e.clientX, e.clientY);
+            state.x = cx; state.y = cy;
+            state.zoom *= e.deltaY < 0 ? 2 : 0.5; // zoom in / out
+            updateInputFields();
+            fetchFractal();
+        });
+
+        // Left‑click -> zoom in, right‑click -> zoom out
+        overlay.addEventListener('click', e => {
+            const { cx, cy } = screenToComplex(e.clientX, e.clientY);
+            state.x = cx; state.y = cy;
+            state.zoom *= 2;
+            updateInputFields();
+            fetchFractal();
+        });
+        overlay.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            const { cx, cy } = screenToComplex(e.clientX, e.clientY);
+            state.x = cx; state.y = cy;
+            state.zoom *= 0.5;
+            updateInputFields();
+            fetchFractal();
+        });
+
+        // Palette change live preview
+        document.getElementById('palette').addEventListener('change', () => {
+            state.palette = document.getElementById('palette').value;
+            fetchFractal(false);
+        });
+
+        // Initial load
+        updateInputFields();
+    </script>
+}

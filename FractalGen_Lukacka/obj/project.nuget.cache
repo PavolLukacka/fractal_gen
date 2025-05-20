@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "iZSpRPCKuK+8YT5uI0psFK/YRACdsfbAYRo1GzS52ChNH2lUsMHJHBAGFeEn8zp886e2z7o5XQEvrupI6FHYKw==",
+  "success": true,
+  "projectFilePath": "C:\\fractalgen\\FractalGen_Lukacka\\FractalGen_Lukacka\\FractalGen_Lukacka.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mepla\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.19.6\\microsoft.visualstudio.azure.containers.tools.targets.1.19.6.nupkg.sha512"
+  ],
+  "logs": []
+}

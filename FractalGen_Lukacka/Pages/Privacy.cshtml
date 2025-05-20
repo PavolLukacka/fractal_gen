@@ -1,0 +1,137 @@
+﻿@page
+@model PrivacyModel
+@{
+    ViewData["Title"] = "Dokumentácia projektu fractal_gen";
+}
+
+<!-- Tailwind CDN (zrušte, ak máte globálne) -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<div class="prose lg:prose-xl mx-auto px-6 py-8">
+
+    <!-- Hlavička -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl font-extrabold tracking-tight mb-3">FractalGen by Pavol Lukačka</h1>
+        <p class="text-gray-600">Vízia projektu: interaktívny generátor fraktálov postavený na .NET 8, Razor Pages &amp; CUDA <span class="font-mono">/</span> OpenMP</p>
+    </header>
+
+    <!-- Odznaky verzie -->
+    <div class="flex flex-wrap justify-center gap-2 mb-8">
+        <span class="inline-flex items-center rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white shadow">
+            🚀 Najnovšia verzia: <code class="ml-1">0.1 Alpha</code>
+        </span>
+        <span class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-800">
+            Posledná aktualizácia: 20.5.2025
+        </span>
+    </div>
+
+    <!-- Prehľad -->
+    <section>
+        <h2 class="font-semibold text-2xl mb-4">Prehľad</h2>
+        <p>
+            <strong>FractalGen</strong> je moderná webová aplikácia, ktorá v reálnom čase renderuje vysoko-detailné fraktály pomocou CUDA (GPU) alebo OpenMP (viacjadrové CPU).
+            Využíva <em>ASP.NET Core Razor Pages</em>, elegantné rozhranie v Tailwinde a ponúka bohaté ovládanie – priblíženie, posun, voľbu paliet farieb, rozlíšenia a počtu iterácií.
+        </p>
+    </section>
+
+    <!-- Začíname -->
+    <section class="mt-10">
+        <h2 class="font-semibold text-2xl mb-4">Not working test build (0.1 Alpha)</h2>
+        <ol class="list-decimal list-inside space-y-2">
+            <li>
+                <strong>Klonujte alebo stiahnite</strong> repozitár z GitHubu. Uistite sa, že priečinok <code>CUDA/</code> obsahuje skompilované <code>fractal.exe</code> (CUDA) a <code>fractal_omp.exe</code> (OpenMP).
+            </li>
+            <li>
+                <strong>Nainštalujte .NET SDK 8.0</strong> (alebo novší). Overte príkazom <code>dotnet --version</code>.
+            </li>
+            <li>
+                <strong>Spustite lokálne</strong>:<br>
+                <code class="block bg-gray-100 p-2 rounded">dotnet run</code>
+            </li>
+        </ol>
+    </section>
+
+    <!-- Hosting -->
+    <section class="mt-10">
+        <h2 class="font-semibold text-2xl mb-4">Hosting na Azure / vlastný server</h2>
+        <p>
+            V Alpha verzii beží vykresľovanie na vašom lokálnom počítači v neskorších Beta verzách budeme sa zameriavať na podporu offloadingu - vzdialené spracovanie cez server.
+            <span class="italic">GPU server</span> využíva CUDA, <span class="italic">CPU server</span> môže pracovať s OpenMP, ak NVIDIA GPU nie je dostupná.
+        </p>
+        <div class="mt-6 md:grid md:grid-cols-2 md:gap-6 md:items-start">
+            <!-- Obrázok -->
+            <img src="/img/architecture.png"
+                 alt="Diagram architektúry"
+                 class="rounded-xl shadow-lg w-full max-w-xs mx-auto md:mx-0" />
+
+            <!-- Popis k obrázku -->
+            <div class="text-sm text-gray-700 mt-4 md:mt-0 md:pl-4">
+                <p class="font-semibold">Obr. 1 – Architektúra Alpha</p>
+                <p class="mt-2">
+                    UI je hostované v Azure Web App (ASP.NET Core + Tailwind).
+                    Po kliknutí používateľa sa požiadavka presmeruje na lokálny server,
+                    ktorý v&nbsp;0.1&nbsp;Alpha vykreslí fraktál pomocou <strong>CUDA</strong> alebo – ak GPU chýba – <strong>OpenMP</strong>.
+                    V&nbsp;0.2&nbsp;Beta plánujeme podporu plnohodnotného <em>off-loadingu</em> do cloudového GPU či CPU kontajnera.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plán vývoja -->
+    <section class="mt-10">
+        <h2 class="font-semibold text-2xl mb-4">Plán vývoja</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="p-4 bg-white rounded-2xl shadow">
+                <h3 class="font-medium mb-2">0.1 Alpha — Lokálny backend</h3>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    <li>CUDA render na GPU</li>
+                    <li>Fallback na OpenMP render na CPU</li>
+                    <li>Interaktívne UI s zoomom a paletami</li>
+                </ul>
+            </div>
+            <div class="p-4 bg-white rounded-2xl shadow">
+                <h3 class="font-medium mb-2">0.2 Beta — Cloudový backend</h3>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    <li>Dockerizovaná CUDA služba</li>
+                    <li>Podpora CPU kontajnera (OpenMP)</li>
+                    <li>WebSocket streamovanie pre progresívne renderovanie</li>
+                </ul>
+            </div>
+            <div class="p-4 bg-white rounded-2xl shadow">
+                <h3 class="font-medium mb-2">1.0 — Verejné vydanie</h3>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    <li>Systém účtov a galérie používateľov</li>
+                    <li>Animácie z kľúčových snímok</li>
+                    <li>Export do PNG/MP4</li>
+                    <li>Kompletná dokumentácia a príklady</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- História verzií -->
+    <section class="mt-10">
+        <h2 class="font-semibold text-2xl mb-4">História verzií</h2>
+        <table class="w-full text-sm table-auto border-collapse">
+            <thead>
+                <tr class="bg-gray-100 *:px-3 *:py-2 text-left">
+                    <th>Verzia</th>
+                    <th>Dátum</th>
+                    <th>Stav</th>
+                    <th>Poznámky</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b *:px-3 *:py-2">
+                    <td><span class="font-mono">0.1 Alpha</span></td>
+                    <td>@DateTime.UtcNow.ToString("yyyy-MM-dd")</td>
+                    <td><span class="inline-block rounded-full bg-yellow-300 text-yellow-900 px-2 py-0.5 text-xs font-medium">prebieha</span></td>
+                    <td>CUDA + OpenMP lokálne, interaktívne UI, návod na hosting UI v Azure</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <footer class="mt-16 text-center text-gray-500 text-xs">
+    </footer>
+</div>
