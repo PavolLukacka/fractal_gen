@@ -7,23 +7,37 @@
 <!-- Tailwind CSS for quick, modern styling -->
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
+<style>
+    /* Smooth zoom – scale only, no panning */
+    #fractal {
+        transition: transform 300ms ease-out;
+        will-change: transform;
+    }
+</style>
+
 <div class="container mx-auto p-6 select-none">
     <h1 class="text-3xl font-bold mb-6 text-center">Interactive CUDA Fractal Explorer</h1>
 
     <div class="grid md:grid-cols-4 gap-6">
-        <!-- ░░░ Control Panel ░░░ -->
+        <!-- ░░░ Control Panel ░░░ -->
         <div class="md:col-span-1 bg-white/80 rounded-2xl shadow p-4 space-y-4">
             <div>
-                <label class="block font-semibold">Center X</label>
-                <input id="xCenter" type="number" step="0.00001" class="w-full rounded border p-1" value="-0.5">
+                <label class="block font-semibold">Center X</label>
+                <input id="xCenter" type="number" step="0.0000001" class="w-full rounded border p-1" value="-0.5">
             </div>
             <div>
-                <label class="block font-semibold">Center Y</label>
-                <input id="yCenter" type="number" step="0.00001" class="w-full rounded border p-1" value="0.0">
+                <label class="block font-semibold">Center Y</label>
+                <input id="yCenter" type="number" step="0.0000001" class="w-full rounded border p-1" value="0.0">
             </div>
             <div>
                 <label class="block font-semibold">Zoom (×)</label>
                 <input id="zoom" type="number" step="0.1" min="1" class="w-full rounded border p-1" value="1">
+            </div>
+            <!-- ░ Zoom sensitivity slider ░ -->
+            <div>
+                <label class="block font-semibold">Zoom Sensitivity</label>
+                <input id="zoomSensitivity" type="range" min="1.1" max="3" step="0.1" value="1.5" class="w-full">
+                <span id="zoomSenseLabel" class="text-sm">1.5×</span>
             </div>
             <div>
                 <label class="block font-semibold">Iterations</label>
@@ -45,6 +59,13 @@
                     <input id="height" type="number" min="100" max="1920" value="800" class="w-1/2 rounded border p-1">
                 </div>
             </div>
+            <div>
+                <label class="block font-semibold">Backend</label>
+                <select id="backend" class="w-full rounded border p-1">
+                    <option value="gpu">CUDA (GPU)</option>
+                    <option value="cpu">OpenMP (CPU)</option>
+                </select>
+            </div>
             <button id="generateBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-2 font-semibold shadow">
                 Generate
             </button>
@@ -53,16 +74,16 @@
             </button>
         </div>
 
-        <!-- ░░░ Fractal Display ░░░ -->
+        <!-- ░░░ Fractal Display ░░░ -->
         <div class="md:col-span-3">
-            <div class="relative group">
+            <div class="relative group select-none">
                 <!-- The fractal image (served from backend) -->
                 <img id="fractal" src="/output.ppm" alt="Fractal" class="w-full rounded-2xl shadow-lg" />
                 <!-- Transparent overlay captures clicks & wheel events -->
                 <div id="overlay" class="absolute inset-0 cursor-crosshair"></div>
                 <!-- Hint tooltip -->
                 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Scroll to zoom │ Left‑click to zoom in │ Right‑click to zoom out
+                    Scroll to zoom │ Left-click to zoom in │ Right-click to zoom out
                 </div>
             </div>
         </div>
@@ -79,50 +100,98 @@
             iterations: 1000,
             width: 800,
             height: 800,
-            palette: 'grayscale'
+            palette: 'grayscale',
+            sensitivity: 1.5 // new – zoom multiplier per step
         };
 
-        // Link DOM elements
+        // Link DOM elements
         const img = document.getElementById('fractal');
         const overlay = document.getElementById('overlay');
         const iterRange = document.getElementById('iterations');
         const iterLabel = document.getElementById('iterLabel');
+        const zoomSenseRange = document.getElementById('zoomSensitivity');
+        const zoomSenseLabel = document.getElementById('zoomSenseLabel');
+
+        let isAnimating = false;  // throttle flag
 
         // ---------- UTILITIES ----------
-        function fetchFractal(showSpinner = true) {
+        function fetchFractal() {
             const { x, y, zoom, iterations, width, height, palette } = state;
-            const url = `/api/fractal/generate?x=${x}&y=${y}&zoom=${zoom}&iterations=${iterations}&w=${width}&h=${height}&palette=${palette}`;
-            if (showSpinner) img.classList.add('animate-pulse');
-            fetch(url)
-                .then(() => {
-                    img.src = `/output.ppm?${Date.now()}`; // bust cache
-                })
-                .finally(() => img.classList.remove('animate-pulse'));
+            const backend = document.getElementById('backend').value;
+            img.classList.add('animate-pulse');
+
+            const src = `/api/fractal/generate?x=${x}&y=${y}&zoom=${zoom}&iterations=${iterations}` +
+                `&w=${width}&h=${height}&palette=${palette}&backend=${backend}&t=${Date.now()}`;
+
+            img.onload = () => img.classList.remove('animate-pulse');
+            img.onerror = () => img.classList.remove('animate-pulse');
+            img.src = src;
         }
 
         function updateInputFields() {
-            document.getElementById('xCenter').value = state.x.toFixed(6);
-            document.getElementById('yCenter').value = state.y.toFixed(6);
+            document.getElementById('xCenter').value = state.x.toFixed(8);
+            document.getElementById('yCenter').value = state.y.toFixed(8);
             document.getElementById('zoom').value = state.zoom.toFixed(2);
             iterRange.value = state.iterations;
             iterLabel.textContent = state.iterations;
             document.getElementById('width').value = state.width;
             document.getElementById('height').value = state.height;
             document.getElementById('palette').value = state.palette;
+            zoomSenseRange.value = state.sensitivity;
+            zoomSenseLabel.textContent = state.sensitivity.toFixed(1) + '×';
         }
 
         function applyInputsToState() {
             state.x = parseFloat(document.getElementById('xCenter').value);
             state.y = parseFloat(document.getElementById('yCenter').value);
             state.zoom = parseFloat(document.getElementById('zoom').value);
-            state.iterations = parseInt(iterRange.value);
-            state.width = parseInt(document.getElementById('width').value);
-            state.height = parseInt(document.getElementById('height').value);
+            state.iterations = parseInt(iterRange.value, 10);
+            state.width = parseInt(document.getElementById('width').value, 10);
+            state.height = parseInt(document.getElementById('height').value, 10);
             state.palette = document.getElementById('palette').value;
+            state.sensitivity = parseFloat(zoomSenseRange.value);
         }
 
-        function getPlaneBounds() {
-            const scale = 1 / state.zoom;
+        // ---------- SMOOTH ZOOM WITHOUT PANNING ----------
+        function smoothZoom(clientX, clientY, scaleFactor) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // Capture pointer position relative to the image (0..1)
+            const rect = img.getBoundingClientRect();
+            const relX = (clientX - rect.left) / rect.width;
+            const relY = (clientY - rect.top) / rect.height;
+
+            // Set transform-origin so scale occurs around pointer, but no translate
+            img.style.transformOrigin = `${(relX * 100).toFixed(1)}% ${(relY * 100).toFixed(1)}%`;
+            img.style.transform = `scale(${scaleFactor})`;
+
+            // When animation ends: reset transform, commit math state, re-render
+            img.addEventListener('transitionend', function handler() {
+                img.removeEventListener('transitionend', handler);
+
+                // Clear transform so next zoom starts fresh
+                img.style.transition = 'none';
+                img.style.transform = 'none';
+                img.style.transformOrigin = '50% 50%'; // back to default centre
+                void img.offsetWidth;              // force reflow
+                img.style.transition = '';         // re-enable transitions
+
+                // ---- Update Mandelbrot coordinates ----
+                const { cx, cy } = screenToComplex(clientX, clientY);
+                state.x = cx;
+                state.y = cy;
+                state.zoom *= scaleFactor;
+                updateInputFields();
+                fetchFractal();
+
+                isAnimating = false;
+            }, { once: true });
+        }
+
+        // ---------- COMPLEX PLANE HELPERS ----------
+        function getPlaneBounds(zoomValue = state.zoom) {
+            const scale = 1 / zoomValue;
             const halfWidth = 1.5 * scale;
             const halfHeight = 1.5 * scale;
             return {
@@ -133,11 +202,11 @@
             };
         }
 
-        function screenToComplex(clientX, clientY) {
+        function screenToComplex(clientX, clientY, zoomValue = state.zoom) {
             const rect = img.getBoundingClientRect();
-            const relX = (clientX - rect.left) / rect.width;  // 0…1
-            const relY = (clientY - rect.top) / rect.height; // 0…1
-            const { xMin, xMax, yMin, yMax } = getPlaneBounds();
+            const relX = (clientX - rect.left) / rect.width;
+            const relY = (clientY - rect.top) / rect.height;
+            const { xMin, xMax, yMin, yMax } = getPlaneBounds(zoomValue);
             const cx = xMin + relX * (xMax - xMin);
             const cy = yMin + relY * (yMax - yMin);
             return { cx, cy };
@@ -157,45 +226,43 @@
             fetchFractal();
         });
 
-        // Update iteration label in real‑time
+        // Update iteration label in real-time
         iterRange.addEventListener('input', () => {
             iterLabel.textContent = iterRange.value;
         });
 
-        // Mouse wheel zoom
+        // Zoom sensitivity slider real-time update
+        zoomSenseRange.addEventListener('input', () => {
+            state.sensitivity = parseFloat(zoomSenseRange.value);
+            zoomSenseLabel.textContent = state.sensitivity.toFixed(1) + '×';
+        });
+
+        // Wheel zoom (no panning) – now respects sensitivity
         overlay.addEventListener('wheel', e => {
             e.preventDefault();
-            const { cx, cy } = screenToComplex(e.clientX, e.clientY);
-            state.x = cx; state.y = cy;
-            state.zoom *= e.deltaY < 0 ? 2 : 0.5; // zoom in / out
-            updateInputFields();
-            fetchFractal();
+            const factor = e.deltaY < 0 ? state.sensitivity : 1 / state.sensitivity;
+            smoothZoom(e.clientX, e.clientY, factor);
+        }, { passive: false });
+
+        // Left-click -> zoom in (respects sensitivity)
+        overlay.addEventListener('click', e => {
+            smoothZoom(e.clientX, e.clientY, state.sensitivity);
         });
 
-        // Left‑click -> zoom in, right‑click -> zoom out
-        overlay.addEventListener('click', e => {
-            const { cx, cy } = screenToComplex(e.clientX, e.clientY);
-            state.x = cx; state.y = cy;
-            state.zoom *= 2;
-            updateInputFields();
-            fetchFractal();
-        });
+        // Right-click -> zoom out (respects sensitivity)
         overlay.addEventListener('contextmenu', e => {
             e.preventDefault();
-            const { cx, cy } = screenToComplex(e.clientX, e.clientY);
-            state.x = cx; state.y = cy;
-            state.zoom *= 0.5;
-            updateInputFields();
+            smoothZoom(e.clientX, e.clientY, 1 / state.sensitivity);
+        });
+
+        // Palette change
+        document.getElementById('palette').addEventListener('change', () => {
+            state.palette = document.getElementById('palette').value;
             fetchFractal();
         });
 
-        // Palette change live preview
-        document.getElementById('palette').addEventListener('change', () => {
-            state.palette = document.getElementById('palette').value;
-            fetchFractal(false);
-        });
-
-        // Initial load
+        // Initial render field sync
         updateInputFields();
+        // fetchFractal(); // optionally load first image on page load
     </script>
 }

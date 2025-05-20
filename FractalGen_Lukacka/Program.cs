@@ -1,7 +1,11 @@
+﻿using System.Reflection;
+using System.Runtime.InteropServices;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -15,6 +19,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.MapControllers();
 
 app.UseRouting();
 

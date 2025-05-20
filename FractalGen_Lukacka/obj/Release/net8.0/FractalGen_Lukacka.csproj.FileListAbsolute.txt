@@ -29,3 +29,6 @@ C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_L
 C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\FractalGen_Lukacka.pdb
 C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\FractalGen_Lukacka.genruntimeconfig.cache
 C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\ref\FractalGen_Lukacka.dll
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\bin\Release\net8.0\SixLabors.ImageSharp.dll
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\FractalGen_Lukacka.csproj.AssemblyReference.cache
+C:\Users\mepla\OneDrive\Počítač\Topsolar2\project-2-PavolLukacka\FractalGen_Lukacka\obj\Release\net8.0\FractalG.98466FCC.Up2Date

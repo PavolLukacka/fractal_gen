@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "9DEjMtmYPGhV7f1VqTiiY0jB3uLMT7sWElzwRaYTyVb4JU+bpiyyYlrybDhAoJPV+Z7nw1aE76MueRhEIIg4qA==",
+  "dgSpecHash": "5vKxH41AnMeIcYHRQjiKw1Fdbq+3Xum+wIsdTGyOPDAtDFE2PSIblDC5pXmi9OjR0Q6k96feTYtJnIctBI/LRw==",
   "success": true,
   "projectFilePath": "C:\\Users\\mepla\\OneDrive\\Počítač\\Topsolar2\\project-2-PavolLukacka\\FractalGen_Lukacka\\FractalGen_Lukacka.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\mepla\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.19.6\\microsoft.visualstudio.azure.containers.tools.targets.1.19.6.nupkg.sha512"
+    "C:\\Users\\mepla\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.19.6\\microsoft.visualstudio.azure.containers.tools.targets.1.19.6.nupkg.sha512",
+    "C:\\Users\\mepla\\.nuget\\packages\\sixlabors.imagesharp\\3.1.8\\sixlabors.imagesharp.3.1.8.nupkg.sha512"
   ],
   "logs": []
 }

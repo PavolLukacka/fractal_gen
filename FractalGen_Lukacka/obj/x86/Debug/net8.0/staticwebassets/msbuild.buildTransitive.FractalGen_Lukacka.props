@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\FractalGen_Lukacka.props" />
+</Project>
